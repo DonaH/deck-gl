@@ -1,60 +1,68 @@
 "use client";
 
-import React, { useMemo, useEffect, useState } from "react";
+import React, { useMemo, useEffect, useState, useCallback } from "react";
 import mockGeo from "./mockGeo.json";
 import { APIProvider, Map, Marker, useMap } from "@vis.gl/react-google-maps";
 import { GeoJsonLayer } from "@deck.gl/layers";
 import { GoogleMapsOverlay as DeckOverlay } from "@deck.gl/google-maps";
-import { Map as MapsTypeGoogle } from "@types/googlemaps";
-import {
-  FeatureCollection,
-  Feature,
-  Geometry,
-  Properties,
-} from "./mockGeoModel";
+import { FeatureCollection, Feature } from "./mockGeoModel";
 
 const myHeaders = new Headers();
 myHeaders.append("key", process.env.NEW_HT_API_KEY as string);
 myHeaders.append("Content-Type", "application/json");
 
-const GOOGLE_MAPS_API_KEY = process.env
-  .NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string;
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string;
 const GOOGLE_MAP_ID = "";
 
 const HailTraceMaps = () => {
-  const [mbr, setMbr] = useState({
-    nw: "",
-    ne: "",
-    se: "",
-    sw: "",
-    // nw: "49.2827 -123.1207",
-    // ne: "25.7617 -123.1207",
-    // se: "25.7617 -80.1918",
-    // sw: "49.2827 -80.1918",
-  });
+	// minimum bounding rectangle
+	const [mbr, setMbr] = useState({
+		nw: "",
+		ne: "",
+		se: "",
+		sw: "",
+		// nw: "49.2827 -123.1207",
+		// ne: "25.7617 -123.1207",
+		// se: "25.7617 -80.1918",
+		// sw: "49.2827 -80.1918",
+	});
 
-  const updateMbr = (map: MapsTypeGoogle) => {
-    if (typeof map.getBounds === "function") {
-      const bounds = map.getBounds();
-      const ne = bounds.getNorthEast();
-      const sw = bounds.getSouthWest();
+const updateMbr = useCallback(( event: any ) => {
+	console.log('event triggered', event);
 
-      const nw = { lat: ne.lat(), lng: sw.lng() };
-      const se = { lat: sw.lat(), lng: ne.lng() };
+	if (event.detail && event.detail.bounds) {
+		const newMbr = event.detail.bounds;
+		// Calculate corners
+		const nw = { lat: newMbr.north, lng: newMbr.west };
+		const ne = { lat: newMbr.north, lng: newMbr.east };
+		const se = { lat: newMbr.south, lng: newMbr.east };
+		const sw = { lat: newMbr.south, lng: newMbr.west };
 
-      setMbr({
-        nw: `${nw.lat} ${nw.lng}`,
-        ne: `${ne.lat()} ${ne.lng()}`,
-        se: `${se.lat} ${se.lng}`,
-        sw: `${sw.lat()} ${sw.lng}`,
-      });
-      console.log("mbr", mbr);
-    } else {
-      console.error(
-        "map.getBounds is not a function. Ensure map is correctly initialized."
-      );
-    }
-  };
+		// Log corners
+		console.log("NW:", nw);
+		console.log("NE:", ne);
+		console.log("SE:", se);
+		console.log("SW:", sw);
+
+		// Convert the corner objects to strings
+		let nwStr = `${nw.lat} ${nw.lng} + ','`;
+		let neStr = `${ne.lat} ${ne.lng} + ','`;
+		let seStr = `${se.lat} ${se.lng} + ','`;
+		let swStr = `${sw.lat} ${sw.lng} + ','`;
+
+		setMbr({
+			ne: neStr,
+			nw: nwStr,
+			se: seStr,
+			sw: swStr,
+		});
+		console.log("mbr", mbr);
+	} else if (event.error) {
+		console.error("Error getting bounds in map", event.error);
+	} else {
+		console.error("Error: event.detail or event.detail.bounds is undefined in map.");
+	}
+}, []);
 
   const params = JSON.stringify({
     mbr: {
@@ -85,22 +93,20 @@ const HailTraceMaps = () => {
     const map = useMap();
     const overlay = useMemo(() => new DeckOverlay({ layers }), [layers]);
 
-    useEffect(() => {
-      overlay.setMap(map);
-      return () => overlay.setMap(null);
-    }, [map, layers]);
+	useEffect(() => {
+		if (map) {
+		  overlay.setMap(map);
+		}
+		return () => {
+		  if (map) {
+			overlay.setMap(null);
+		  }
+		};
+	}, [map, layers]);
 
-    // overlay.setProps(layers);
     return null;
   };
 
-  const INITIAL_VIEW_STATE = {
-    longitude: -99.733147,
-    latitude: 32.448734,
-    zoom: 9,
-    pitch: 0,
-    bearing: 0,
-  };
   const [features, setFeatures] = useState<Feature[]>([]);
   const geoJsonData = mockGeo as FeatureCollection;
 
@@ -136,6 +142,7 @@ const HailTraceMaps = () => {
     }),
   ];
   console.log("layers", layers);
+
   return (
     <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
       <Map
@@ -145,7 +152,7 @@ const HailTraceMaps = () => {
         defaultZoom={10}
         mapId={GOOGLE_MAP_ID}
         style={{ width: "100vw", height: "100vh" }}
-        onBoundsChanged={(map) => updateMbr(map)}
+        onBoundsChanged={updateMbr}
       >
         <DeckGLOverlay layers={layers} />
         <Marker position={{ lat: 32.448734, lng: -99.733147 }} />

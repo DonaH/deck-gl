@@ -3,7 +3,7 @@
 import React, { useMemo, useEffect, useState, useCallback } from "react";
 import mockGeo from "./mockGeo.json";
 import { APIProvider, Map, Marker, useMap } from "@vis.gl/react-google-maps";
-import { GeoJsonLayer } from "@deck.gl/layers";
+import { GeoJsonLayer, GeoJsonLayerProps } from "@deck.gl/layers";
 import { GoogleMapsOverlay as DeckOverlay } from "@deck.gl/google-maps";
 import { FeatureCollection, Feature } from "./mockGeoModel";
 
@@ -124,7 +124,7 @@ const HailTraceMaps = () => {
   const layers = [
     new GeoJsonLayer({
       id: "geojson-layer",
-      data: features,
+      data: features as GeoJsonLayerProps['data'],
       stroked: false,
       filled: true,
       pointType: "circle+text",

@@ -27,42 +27,47 @@ const HailTraceMaps = () => {
 		// sw: "49.2827 -80.1918",
 	});
 
-const updateMbr = useCallback(( event: any ) => {
-	console.log('event triggered', event);
+	const updateMbr = useCallback(( event: any ) => {
+		console.log('event triggered', event);
 
-	if (event.detail && event.detail.bounds) {
-		const newMbr = event.detail.bounds;
-		// Calculate corners
-		const nw = { lat: newMbr.north, lng: newMbr.west };
-		const ne = { lat: newMbr.north, lng: newMbr.east };
-		const se = { lat: newMbr.south, lng: newMbr.east };
-		const sw = { lat: newMbr.south, lng: newMbr.west };
+		if (event.detail && event.detail.bounds) {
+			const newMbr = event.detail.bounds;
+			// Calculate corners
+			const nw = { lat: newMbr.north, lng: newMbr.west };
+			const ne = { lat: newMbr.north, lng: newMbr.east };
+			const se = { lat: newMbr.south, lng: newMbr.east };
+			const sw = { lat: newMbr.south, lng: newMbr.west };
 
-		// Log corners
-		console.log("NW:", nw);
-		console.log("NE:", ne);
-		console.log("SE:", se);
-		console.log("SW:", sw);
+			// Log corners
+			console.log("NW:", nw);
+			console.log("NE:", ne);
+			console.log("SE:", se);
+			console.log("SW:", sw);
 
-		// Convert the corner objects to strings
-		let nwStr = `${nw.lat} ${nw.lng} + ','`;
-		let neStr = `${ne.lat} ${ne.lng} + ','`;
-		let seStr = `${se.lat} ${se.lng} + ','`;
-		let swStr = `${sw.lat} ${sw.lng} + ','`;
+			// Convert the corner objects to strings
+			let nwStr = `${nw.lat} ${nw.lng},`;
+			let neStr = `${ne.lat} ${ne.lng},`;
+			let seStr = `${se.lat} ${se.lng},`;
+			let swStr = `${sw.lat} ${sw.lng},`;
 
-		setMbr({
-			ne: neStr,
-			nw: nwStr,
-			se: seStr,
-			sw: swStr,
-		});
-		console.log("mbr", mbr);
-	} else if (event.error) {
-		console.error("Error getting bounds in map", event.error);
-	} else {
-		console.error("Error: event.detail or event.detail.bounds is undefined in map.");
-	}
-}, []);
+			setMbr({
+				nw: nwStr,
+				ne: neStr,
+				se: seStr,
+				sw: swStr,
+			});
+			// console.log("mbr", mbr);
+		} else if (event.error) {
+			console.error("Error getting bounds in map", event.error);
+		} else {
+			console.error("Error: event.detail or event.detail.bounds is undefined in map.");
+		}
+	}, []);
+
+	// Use effect to log the updated mbr
+	useEffect(() => {
+		console.log("Updated mbr:", mbr);
+	}, [mbr]);
 
   const params = JSON.stringify({
     mbr: {

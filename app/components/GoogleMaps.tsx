@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useMemo, useEffect, useState, useCallback } from "react";
 import mockGeo from "./mockGeo.json";
@@ -75,10 +75,10 @@ const HailTraceMaps = () => {
 		mbr: mbr,
 		dateRange: {
 		min: "2024-06-01 00:00:00",
-		max: "2024-06-20 00:00:00",
+		max: "2024-06-10 00:00:00",
 		},
 		// optional
-		// min max date range
+		// min max date range (default is all data, increment daily)
 		// optional
 		// type is number
 		//"diameterInch": 1.0
@@ -166,7 +166,7 @@ const HailTraceMaps = () => {
 			// defaultCenter={{ lat: 34.0522342, lng: -118.2436849 }} // Los Angeles
 			// defaultCenter={{ lat: 39.50, lng: -98.35 }} // United States
 			defaultCenter={{ lat: 32.448734, lng: -99.733147 }} // Abilene TX
-			defaultZoom={10}
+			defaultZoom={8}
 			mapId={GOOGLE_MAP_ID}
 			style={{ width: "100vw", height: "100vh" }}
 			onBoundsChanged={updateMbr}

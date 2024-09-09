@@ -106,6 +106,8 @@ const HailTraceMaps = () => {
 	useEffect(() => {
 		fetch(
 		"https://hailtrace-microservice-x7xzzdp35a-uk.a.run.app/api/hail-trace/get-feature",
+		// "https://hailtrace-microservice-x7xzzdp35a-uk.a.run.app/api/hail-trace/get-feature",
+		
 		requestOptions
 		)
 		.then((response) => response.json())
